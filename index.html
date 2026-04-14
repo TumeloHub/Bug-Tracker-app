@@ -1,15 +1,499 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Bug Tracker</title>
-  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bug Tracker | Admin Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        /* Custom CSS to make the board fill the screen and allow horizontal scrolling if needed */
+        body {
+            background-color: #f4f5f7;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-x: auto;
+        }
+
+        .board-column {
+            min-width: 300px;
+            border-radius: 8px;
+        }
+
+        /* New custom background colors for each status column */
+        .col-bg-open {
+            background-color: #f1f2f4;
+        }
+
+        /* Light Grey */
+        .col-bg-in-progress {
+            background-color: #e3f2fd;
+        }
+
+        /* Light Blue */
+        .col-bg-overdue {
+            background-color: #ffebee;
+        }
+
+        /* Light Red */
+        .col-bg-resolved {
+            background-color: #e8f5e9;
+        }
+
+        /* Light Green */
+
+        /* Gives the ticket cards a nice hover effect so they feel clickable/draggable */
+        .ticket-card {
+            cursor: pointer;
+            transition: transform 0.1s ease-in-out;
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        }
+    </style>
 </head>
+
 <body>
 
-  <h1>Bug Tracking System</h1>
-  <p>Project is loading.....</p>
+    <header class="navbar navbar-dark bg-dark px-3 shadow-sm">
+        <a class="navbar-brand fw-bold" href="#">
+            <i class="bi bi-bug-fill text-warning me-2"></i>BugTracker Admin
+        </a>
+        <div class="d-flex gap-2">
+            <button id="btn-manage-team" class="btn btn-outline-light btn-sm" data-bs-toggle="modal"
+                data-bs-target="#modal-manage-team">Manage Team</button>
+            <button id="btn-manage-projects" class="btn btn-outline-light btn-sm" data-bs-toggle="modal"
+                data-bs-target="#modal-manage-projects">Manage Projects</button>
+            <button id="btn-new-ticket" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                data-bs-target="#modal-create-ticket">
+                <i class="bi bi-plus-lg"></i> New Ticket
+            </button>
+        </div>
+    </header>
 
-  <script src="localstoragehelpers.js"></script>
+    <main class="p-4">
+        <div id="board-container" class="d-flex flex-row gap-4 h-100 align-items-start">
+
+            <!-- Open ticket column -->
+            <div class="board-column col-bg-open d-flex flex-column p-3 pb-1">
+                <h6 class="fw-bold text-muted mb-3 d-flex justify-content-between">
+                    Open <span class="badge bg-secondary rounded-pill" id="count-open">0</span>
+                </h6>
+
+                <div id="col-open" class="ticket-container d-flex flex-column gap-2 flex-grow-1 min-vh-50">
+                    <div class="card border-0 shadow-sm mb-2 ticket-card" id="ticket-001" style="cursor: grab;">
+                        <div class="card-body p-3">
+                            <p class="card-text fw-semibold mb-2 text-dark text-break" id="ticket-summary-001">
+                                Undo function doesn't always work on the login screen
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="d-flex gap-1">
+                                    <span class="badge bg-warning text-dark rounded-pill"
+                                        id="ticket-priority-001">Medium</span>
+                                    <span class="badge bg-info text-dark rounded-pill"
+                                        id="ticket-project-001">Frontend</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2" title="Assigned to: Mario Johnson">
+                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-001">Mario
+                                        J.</span>
+                                    <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=28"
+                                        alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-001">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- In progress ticket column -->
+            <div class="board-column col-bg-in-progress d-flex flex-column p-3 pb-1">
+                <h6 class="fw-bold text-primary mb-3 d-flex justify-content-between">
+                    In Progress <span class="badge bg-primary rounded-pill" id="count-in-progress">0</span>
+                </h6>
+                <div id="col-in-progress" class="ticket-container d-flex flex-column gap-2 flex-grow-1 min-vh-50">
+                    <div class="card border-0 shadow-sm mb-2 ticket-card" id="ticket-002" style="cursor: grab;">
+                        <div class="card-body p-3">
+                            <p class="card-text fw-semibold mb-2 text-dark text-break" id="ticket-summary-002">
+                                Undo function doesn't always work on the login screen
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="d-flex gap-1">
+                                    <span class="badge bg-warning text-dark rounded-pill"
+                                        id="ticket-priority-002">Medium</span>
+                                    <span class="badge bg-info text-dark rounded-pill"
+                                        id="ticket-project-002">Frontend</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2" title="Assigned to: Mario Johnson">
+                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-002">Mario
+                                        J.</span>
+                                    <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=28"
+                                        alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-002">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overdue ticket column -->
+            <div class="board-column col-bg-overdue d-flex flex-column p-3 pb-1">
+                <h6 class="fw-bold text-danger mb-3 d-flex justify-content-between">
+                    Overdue <span class="badge bg-danger rounded-pill" id="count-overdue">0</span>
+                </h6>
+                <div id="col-overdue" class="ticket-container d-flex flex-column gap-2 flex-grow-1 min-vh-50">
+                    <div class="card border-0 shadow-sm mb-2 ticket-card" id="ticket-003" style="cursor: grab;">
+                        <div class="card-body p-3">
+                            <p class="card-text fw-semibold mb-2 text-dark text-break" id="ticket-summary-003">
+                                Undo function doesn't always work on the login screen
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="d-flex gap-1">
+                                    <span class="badge bg-warning text-dark rounded-pill"
+                                        id="ticket-priority-003">Medium</span>
+                                    <span class="badge bg-info text-dark rounded-pill"
+                                        id="ticket-project-003">Frontend</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2" title="Assigned to: Mario Johnson">
+                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-003">Mario
+                                        J.</span>
+                                    <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=28"
+                                        alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-003">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resolved ticket column -->
+            <div class="board-column col-bg-resolved d-flex flex-column p-3 pb-1">
+                <h6 class="fw-bold text-success mb-3 d-flex justify-content-between">
+                    Resolved <span class="badge bg-success rounded-pill" id="count-resolved">0</span>
+                </h6>
+                <div id="col-resolved" class="ticket-container d-flex flex-column gap-2 flex-grow-1 min-vh-50">
+                    <div class="card border-0 shadow-sm mb-2 ticket-card" id="ticket-004" style="cursor: grab;">
+                        <div class="card-body p-3">
+                            <p class="card-text fw-semibold mb-2 text-dark text-break" id="ticket-summary-004">
+                                Undo function doesn't always work on the login screen
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="d-flex gap-1">
+                                    <span class="badge bg-warning text-dark rounded-pill"
+                                        id="ticket-priority-004">Medium</span>
+                                    <span class="badge bg-info text-dark rounded-pill"
+                                        id="ticket-project-004">Frontend</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2" title="Assigned to: Mario Johnson">
+                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-004">Mario
+                                        J.</span>
+                                    <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=28"
+                                        alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-004">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Create ticket form -->
+
+    <div class="modal fade" id="modal-create-ticket" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Issue Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="form-ticket" class="needs-validation">
+
+                        <h6 class="fw-bold text-primary mb-3">Issue Details</h6>
+
+                        <div class="mb-3">
+                            <label for="input-summary" class="form-label fw-semibold small">Issue Summary <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="input-summary"
+                                placeholder="e.g., Login button unresponsive on mobile" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="input-description" class="form-label fw-semibold small">Detailed
+                                Description</label>
+                            <textarea class="form-control" id="input-description" rows="3"
+                                placeholder="Describe the steps to reproduce the bug..."></textarea>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="select-project" class="form-label fw-semibold small">Project</label>
+                                <select class="form-select" id="select-project">
+                                    <option value="" selected disabled>Select Project...</option>
+                                    <option value="Frontend">Frontend</option>
+                                    <option value="Backend">Backend</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="select-status" class="form-label fw-semibold small">Status</label>
+                                <select class="form-select" id="select-status">
+                                    <option value="open" selected>Open</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="overdue">Overdue</option>
+                                    <option value="resolved">Resolved</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="select-priority" class="form-label fw-semibold small">Priority</label>
+                                <select class="form-select" id="select-priority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted">
+
+                        <h6 class="fw-bold text-primary mb-3">Assignment</h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="select-reporter" class="form-label fw-semibold small">Identified By
+                                    (Reporter)</label>
+                                <select class="form-select" id="select-reporter">
+                                    <option value="" selected disabled>Select Team Member...</option>
+                                    <option value="user1">Ryan B.</option>
+                                    <option value="user2">Mario J.</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="select-assignee" class="form-label fw-semibold small">Assigned To</label>
+                                <select class="form-select" id="select-assignee">
+                                    <option value="" selected>Unassigned</option>
+                                    <option value="user1">Ryan B.</option>
+                                    <option value="user2">Mario J.</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted">
+
+                        <h6 class="fw-bold text-primary mb-3">Timeline & Resolution</h6>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="input-date-identified" class="form-label fw-semibold small">Date
+                                    Identified</label>
+                                <input type="date" class="form-control" id="input-date-identified">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="input-date-target" class="form-label fw-semibold small">Target
+                                    Resolution</label>
+                                <input type="date" class="form-control" id="input-date-target">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="input-date-actual" class="form-label fw-semibold small">Actual
+                                    Resolution</label>
+                                <input type="date" class="form-control" id="input-date-actual" disabled
+                                    title="Only fill when resolving">
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="input-resolution-summary" class="form-label fw-semibold small">Resolution
+                                Summary</label>
+                            <textarea class="form-control" id="input-resolution-summary" rows="2"
+                                placeholder="Leave blank until resolved..." disabled></textarea>
+                        </div>
+
+                    </form>
+                </div>
+
+
+
+                <div class="modal-footer border-top-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn-save-ticket" class="btn btn-primary">Save Ticket</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage projects form -->
+
+    <div class="modal fade" id="modal-manage-projects" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Manage Projects</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+
+                    <form id="form-add-project" class="mb-4">
+                        <label for="input-project-name" class="form-label fw-semibold small">Add New Project</label>
+                        <div class="input-group shadow-sm">
+                            <input type="text" class="form-control" id="input-project-name"
+                                placeholder="e.g., Mobile App Overhaul" required>
+                            <button class="btn btn-primary fw-semibold" type="button" id="btn-save-project">Add
+                                Project</button>
+                        </div>
+                        <div class="form-text small mt-1">Project IDs should be auto-generated by the system.</div>
+                    </form>
+
+                    <hr class="text-muted mb-4">
+
+                    <h6 class="fw-bold text-primary mb-3">Current Projects</h6>
+
+                    <ul class="list-group list-group-flush border rounded shadow-sm" id="list-projects">
+
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-white"
+                            id="project-item-001">
+                            <span class="text-dark fw-semibold" id="project-name-001">Frontend Dashboard</span>
+                            <span class="badge bg-secondary rounded-pill font-monospace"
+                                id="project-id-001">PRJ-001</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-white"
+                            id="project-item-002">
+                            <span class="text-dark fw-semibold" id="project-name-002">Database Migration</span>
+                            <span class="badge bg-secondary rounded-pill font-monospace"
+                                id="project-id-002">PRJ-002</span>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage team form -->
+
+    <div class="modal fade" id="modal-manage-team" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Manage Team</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+
+                    <h6 class="fw-bold text-primary mb-3">Add Team Member</h6>
+                    <form id="form-add-team-member" class="mb-4">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="input-team-name" class="form-label fw-semibold small">First Name</label>
+                                <input type="text" class="form-control" id="input-team-name" placeholder="e.g., John"
+                                    required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="input-team-surname" class="form-label fw-semibold small">Surname</label>
+                                <input type="text" class="form-control" id="input-team-surname"
+                                    placeholder="e.g., Smith" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="input-team-email" class="form-label fw-semibold small">Email Address</label>
+                                <input type="email" class="form-control" id="input-team-email"
+                                    placeholder="e.g., jsmith@example.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="input-team-username" class="form-label fw-semibold small">Unique
+                                    Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted">@</span>
+                                    <input type="text" class="form-control" id="input-team-username"
+                                        placeholder="j_smith" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div class="form-text small">User IDs and Profile Pictures will be auto-generated.</div>
+                            <button class="btn btn-primary fw-semibold" type="button" id="btn-save-team-member">Add
+                                Member</button>
+                        </div>
+                    </form>
+
+                    <hr class="text-muted mb-4">
+
+                    <h6 class="fw-bold text-primary mb-3">Current Team Members</h6>
+
+                    <ul class="list-group list-group-flush border rounded shadow-sm" id="list-team-members">
+
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-white p-3"
+                            id="team-item-user1">
+
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="https://ui-avatars.com/api/?name=Ryan+Benade&background=random&rounded=true&size=40"
+                                    alt="Avatar" class="shadow-sm" id="team-pfp-user1">
+
+                                <div>
+                                    <div class="text-dark fw-semibold" id="team-fullname-user1">Ryan Benade</div>
+                                    <div class="small text-muted" id="team-email-user1">ryan@example.com</div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column align-items-end">
+                                <span class="badge bg-light text-dark border mb-1"
+                                    id="team-username-user1">@ryan_b</span>
+                                <span class="badge bg-secondary rounded-pill font-monospace" style="font-size: 0.65rem;"
+                                    id="team-id-user1">USR-001</span>
+                            </div>
+
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-white p-3"
+                            id="team-item-user2">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=40"
+                                    alt="Avatar" class="shadow-sm" id="team-pfp-user2">
+
+                                <div>
+                                    <div class="text-dark fw-semibold" id="team-fullname-user2">Mario Johnson</div>
+                                    <div class="small text-muted" id="team-email-user2">mario.j@example.com</div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-end">
+                                <span class="badge bg-light text-dark border mb-1"
+                                    id="team-username-user2">@mario_tech</span>
+                                <span class="badge bg-secondary rounded-pill font-monospace" style="font-size: 0.65rem;"
+                                    id="team-id-user2">USR-002</span>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
+
 </html>

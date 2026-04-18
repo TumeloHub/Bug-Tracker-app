@@ -14,7 +14,7 @@ function seedData() {
   if (loadData("people").length === 0) {
     const people = [
       { id: 1, name: "Tumi", surname: "Lepota", email: "tumi@email.com", username: "tumi01" },
-      { id: 2, name: "Logan", surname: "Doe", email: "logan@email.com", username: "logan01" },
+      { id: 2, name: "Logan", surname: "von Wielligh", email: "vonwiellighlogan@gmail.com", username: "Tropsickcil" },
       { id: 3, name: "Boitemogelo", surname: "Smith", email: "Boitemogelo@email.com", username: "Boitemogelosmith" },
       { id: 4, name: "Ryan", surname: "Brown", email: "Ryan@email.com", username: "Rbrown" },
       { id: 5, name: "Emma", surname: "Wilson", email: "emma@email.com", username: "ewilson" }

@@ -21,10 +21,16 @@
         main {
             flex-grow: 1;
             overflow-x: auto;
+            .board-column { min-width: 300px; border-radius: 8px; }
+             .col-bg-open { background-color: #f1f2f4; }
+             .col-bg-in-progress { background-color: #e3f2fd; }
+             .col-bg-overdue { background-color: #ffebee; }
+             .col-bg-resolved { background-color: #e8f5e9; }
         }
 
         .board-column {
             min-width: 300px;
+            flex: 1 1 300px;
             border-radius: 8px;
         }
 
@@ -52,14 +58,41 @@
 
         /* Gives the ticket cards a nice hover effect so they feel clickable/draggable */
         .ticket-card {
-            cursor: pointer;
-            transition: transform 0.1s ease-in-out;
+            cursor: grab;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .ticket-container {
+        overflow-y: auto;   
+        flex-grow: 1;
         }
 
         .ticket-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
         }
+
+        .ticket-card.dragging {
+            opacity: 0.4;
+            transform: scale(1.08) rotate(4deg);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4) !important;
+            z-index: 10000;
+        }
+        .ticket-card.dropping {
+            animation: dropIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes dropIn {
+            0%   { transform: scale(0.75) rotate(-8deg); opacity: 0; }
+            50%  { transform: scale(1.15) rotate(4deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .ticket-container.dragover {
+            background-color: #dbeafe !important;
+            box-shadow: inset 0 0 0 3px #3b82f6;
+            transition: all 0.2s ease;
+        }
+
     </style>
 </head>
 
@@ -494,8 +527,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <---!--end of ryans code--!-->
-<script src="localstoragehelpers.js"></script>
-    <script src="app.js"></script>
+<script src="localstoragehelpers.js"></script>  
+<script src="Issues.js"></script>
+<script src="AppInitialisation.js"></script>
+<script src="DragAndDrop.js"></script>
+<script src="Members.js"></script>
+<script src="Project.js"></script>
 </body>
 
 </html>

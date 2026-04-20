@@ -127,9 +127,9 @@ function renderBoard() {
         const assigneeName = issue.assignedTo 
             ? loadData("people").find(p => p.id === issue.assignedTo)?.name || "Unassigned" 
             : "Unassigned";
-
+            
         const cardHTML = `
-            <div class="card border-0 shadow-sm mb-2 ticket-card">
+            <div class="card border-0 shadow-sm mb-2 ticket-card" data-id="${issue.id}" data-issue-id="${issue.id}">
                 <div class="card-body p-3">
                     <p class="card-text fw-semibold mb-2">${issue.summary}</p>
                     <div class="d-flex justify-content-between align-items-center mt-3">

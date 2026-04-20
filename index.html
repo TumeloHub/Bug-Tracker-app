@@ -21,11 +21,27 @@
         main {
             flex-grow: 1;
             overflow-x: auto;
-            .board-column { min-width: 300px; border-radius: 8px; }
-             .col-bg-open { background-color: #f1f2f4; }
-             .col-bg-in-progress { background-color: #e3f2fd; }
-             .col-bg-overdue { background-color: #ffebee; }
-             .col-bg-resolved { background-color: #e8f5e9; }
+
+            .board-column {
+                min-width: 300px;
+                border-radius: 8px;
+            }
+
+            .col-bg-open {
+                background-color: #f1f2f4;
+            }
+
+            .col-bg-in-progress {
+                background-color: #e3f2fd;
+            }
+
+            .col-bg-overdue {
+                background-color: #ffebee;
+            }
+
+            .col-bg-resolved {
+                background-color: #e8f5e9;
+            }
         }
 
         .board-column {
@@ -34,27 +50,27 @@
             border-radius: 8px;
         }
 
-        /* New custom background colors for each status column */
+        /* Custom background colors for each status column */
         .col-bg-open {
             background-color: #f1f2f4;
+            border: #bebebe solid 4px;
         }
 
-        /* Light Grey */
+
         .col-bg-in-progress {
             background-color: #e3f2fd;
+            border: #aacce5 solid 4px;
         }
 
-        /* Light Blue */
         .col-bg-overdue {
             background-color: #ffebee;
+            border: #ecbcc3 solid 4px;
         }
 
-        /* Light Red */
         .col-bg-resolved {
             background-color: #e8f5e9;
+            border: #b2dfb6 solid 4px;
         }
-
-        /* Light Green */
 
         /* Gives the ticket cards a nice hover effect so they feel clickable/draggable */
         .ticket-card {
@@ -64,8 +80,10 @@
         }
 
         .ticket-container {
-        overflow-y: auto;   
-        flex-grow: 1;
+            overflow-y: auto;
+            flex-grow: 1;
+            /* min-height: 150px; */
+            /*Min height makes sure ticket will always occupy space, if it has none you can not interact with it*/
         }
 
         .ticket-card:hover {
@@ -79,20 +97,32 @@
             box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4) !important;
             z-index: 10000;
         }
+
         .ticket-card.dropping {
             animation: dropIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
+
         @keyframes dropIn {
-            0%   { transform: scale(0.75) rotate(-8deg); opacity: 0; }
-            50%  { transform: scale(1.15) rotate(4deg); }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            0% {
+                transform: scale(0.75) rotate(-8deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.15) rotate(4deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
         }
+
         .ticket-container.dragover {
             background-color: #dbeafe !important;
             box-shadow: inset 0 0 0 3px #3b82f6;
             transition: all 0.2s ease;
         }
-
     </style>
 </head>
 
@@ -115,8 +145,7 @@
     </header>
 
     <main class="p-4">
-        <div id="board-container" class="d-flex flex-row gap-4 h-100 align-items-start">
-
+        <div id="board-container" class="d-flex flex-row gap-4 h-100">
             <!-- Open ticket column -->
             <div class="board-column col-bg-open d-flex flex-column p-3 pb-1">
                 <h6 class="fw-bold text-muted mb-3 d-flex justify-content-between">
@@ -136,10 +165,10 @@
                                     <span class="badge bg-info text-dark rounded-pill"
                                         id="ticket-project-001">Frontend</span>
                                 </div>
-                                <div class="d-flex align-items-center gap-2" title="Assigned to: Mario Johnson">
-                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-001">Mario
-                                        J.</span>
-                                    <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=28"
+                                <div class="d-flex align-items-center gap-2" title="Assigned to: Rick Grimes">
+                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-001">Rick
+                                        G.</span>
+                                    <img src="https://ui-avatars.com/api/?name=Rick+Grimes&background=random&rounded=true&size=28"
                                         alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-001">
                                 </div>
                             </div>
@@ -147,7 +176,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- In progress ticket column -->
             <div class="board-column col-bg-in-progress d-flex flex-column p-3 pb-1">
                 <h6 class="fw-bold text-primary mb-3 d-flex justify-content-between">
@@ -166,10 +195,10 @@
                                     <span class="badge bg-info text-dark rounded-pill"
                                         id="ticket-project-002">Frontend</span>
                                 </div>
-                                <div class="d-flex align-items-center gap-2" title="Assigned to: Mario Johnson">
+                                <div class="d-flex align-items-center gap-2" title="Assigned to: Rick Grimes">
                                     <span class="small fw-semibold text-muted" id="ticket-assignee-name-002">Mario
                                         J.</span>
-                                    <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=28"
+                                    <img src="https://ui-avatars.com/api/?name=Rick+Grimes&background=random&rounded=true&size=28"
                                         alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-002">
                                 </div>
                             </div>
@@ -196,10 +225,10 @@
                                     <span class="badge bg-info text-dark rounded-pill"
                                         id="ticket-project-003">Frontend</span>
                                 </div>
-                                <div class="d-flex align-items-center gap-2" title="Assigned to: Mario Johnson">
+                                <div class="d-flex align-items-center gap-2" title="Assigned to: Rick Grimes">
                                     <span class="small fw-semibold text-muted" id="ticket-assignee-name-003">Mario
                                         J.</span>
-                                    <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=28"
+                                    <img src="https://ui-avatars.com/api/?name=Rick+Grimes&background=random&rounded=true&size=28"
                                         alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-003">
                                 </div>
                             </div>
@@ -226,10 +255,10 @@
                                     <span class="badge bg-info text-dark rounded-pill"
                                         id="ticket-project-004">Frontend</span>
                                 </div>
-                                <div class="d-flex align-items-center gap-2" title="Assigned to: Mario Johnson">
+                                <div class="d-flex align-items-center gap-2" title="Assigned to: Rick Grimes">
                                     <span class="small fw-semibold text-muted" id="ticket-assignee-name-004">Mario
                                         J.</span>
-                                    <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=28"
+                                    <img src="https://ui-avatars.com/api/?name=Rick+Grimes&background=random&rounded=true&size=28"
                                         alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-004">
                                 </div>
                             </div>
@@ -309,16 +338,16 @@
                                     (Reporter)</label>
                                 <select class="form-select" id="select-reporter">
                                     <option value="" selected disabled>Select Team Member...</option>
-                                    <option value="user1">Ryan B.</option>
-                                    <option value="user2">Mario J.</option>
+                                    <option value="user1">John S.</option>
+                                    <option value="user2">Rick G.</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="select-assignee" class="form-label fw-semibold small">Assigned To</label>
                                 <select class="form-select" id="select-assignee">
                                     <option value="" selected>Unassigned</option>
-                                    <option value="user1">Ryan B.</option>
-                                    <option value="user2">Mario J.</option>
+                                    <option value="user1">John S.</option>
+                                    <option value="user2">Rick G.</option>
                                 </select>
                             </div>
                         </div>
@@ -481,18 +510,18 @@
                             id="team-item-user1">
 
                             <div class="d-flex align-items-center gap-3">
-                                <img src="https://ui-avatars.com/api/?name=Ryan+Benade&background=random&rounded=true&size=40"
+                                <img src="https://ui-avatars.com/api/?name=John+Smith&background=random&rounded=true&size=40"
                                     alt="Avatar" class="shadow-sm" id="team-pfp-user1">
 
                                 <div>
-                                    <div class="text-dark fw-semibold" id="team-fullname-user1">Ryan Benade</div>
-                                    <div class="small text-muted" id="team-email-user1">ryan@example.com</div>
+                                    <div class="text-dark fw-semibold" id="team-fullname-user1">John Smith</div>
+                                    <div class="small text-muted" id="team-email-user1">john@example.com</div>
                                 </div>
                             </div>
 
                             <div class="d-flex flex-column align-items-end">
                                 <span class="badge bg-light text-dark border mb-1"
-                                    id="team-username-user1">@ryan_b</span>
+                                    id="team-username-user1">@john_s</span>
                                 <span class="badge bg-secondary rounded-pill font-monospace" style="font-size: 0.65rem;"
                                     id="team-id-user1">USR-001</span>
                             </div>
@@ -502,17 +531,17 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center bg-white p-3"
                             id="team-item-user2">
                             <div class="d-flex align-items-center gap-3">
-                                <img src="https://ui-avatars.com/api/?name=Mario+Johnson&background=random&rounded=true&size=40"
+                                <img src="https://ui-avatars.com/api/?name=Rick+Grimes&background=random&rounded=true&size=40"
                                     alt="Avatar" class="shadow-sm" id="team-pfp-user2">
 
                                 <div>
-                                    <div class="text-dark fw-semibold" id="team-fullname-user2">Mario Johnson</div>
-                                    <div class="small text-muted" id="team-email-user2">mario.j@example.com</div>
+                                    <div class="text-dark fw-semibold" id="team-fullname-user2">Rick Grimes</div>
+                                    <div class="small text-muted" id="team-email-user2">rickg@anotherexample.com</div>
                                 </div>
                             </div>
                             <div class="d-flex flex-column align-items-end">
                                 <span class="badge bg-light text-dark border mb-1"
-                                    id="team-username-user2">@mario_tech</span>
+                                    id="team-username-user2">@walkers</span>
                                 <span class="badge bg-secondary rounded-pill font-monospace" style="font-size: 0.65rem;"
                                     id="team-id-user2">USR-002</span>
                             </div>
@@ -526,14 +555,30 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!--end of ryans code-->
-<script src="localstoragehelpers.js"></script>  
-<script src="Issues.js"></script>
-<script src="AppInitialisation.js"></script>
-<script src="DragAndDrop.js"></script>
-<script src="Members.js"></script>
-<script src="Project.js"></script>
-<script src="IssueInteractions.js"></script>
+    <script src="localstoragehelpers.js"></script>
+    <script src="Issues.js"></script>
+    <script src="AppInitialisation.js"></script>
+    <script src="DragAndDrop.js"></script>
+    <script src="Members.js"></script>
+    <script src="Project.js"></script>
+    <script src="IssueInteractions.js"></script>
 </body>
 
 </html>
+
+<!-- 
+TO DO LIST: 
+fixed issue with drag and drop not working if a column is empty by adding a min height
+removed personalized default values
+added border to columns
+fixed incorrect comment use where text would display at bottom of screen
+fixed default profile images being first 2 characters in string apart from initials
+created menu for tickets 
+changed ticket created by name to username
+created menu to view users
+created functionality to change profile picture with local files
+- we need to be able to access tickets and edit them 
+- if current date is greater than target resoloution date then it must go to overdue
+- if a ticket is dragged into resolved column then the ticket editor must open and a resoloution date is added and a resoloution summary
+- a resolved issue should not be able to return to other columns
+- we need a way to delete a ticket, this can be done in the menu -->

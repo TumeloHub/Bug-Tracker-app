@@ -1,42 +1,42 @@
-                                         // made this file to connect the html to the js.
+// made this file to connect the html to the js.
 
 document.addEventListener("DOMContentLoaded", () => {
     seedData();                    // Run seeding
-              populateDropdowns();
- renderBoard();
- populateProjectsList();
-             populateTeamList();
+    populateDropdowns();
+    renderBoard();
+    populateProjectsList();
+    populateTeamList();
 
-                        // Refresh when a new ticket modal opens
- document.getElementById("modal-create-ticket").addEventListener("show.bs.modal", () => {
+    // Refresh when a new ticket modal opens
+    document.getElementById("modal-create-ticket").addEventListener("show.bs.modal", () => {
         populateDropdowns();
     });
-// Refresh when manage projects modal opens
-         document.getElementById("modal-manage-projects").addEventListener("show.bs.modal", populateProjectsList);
+    // Refresh when manage projects modal opens
+    document.getElementById("modal-manage-projects").addEventListener("show.bs.modal", populateProjectsList);
 
-// Refresh when Manage Team modal opens
+    // Refresh when Manage Team modal opens
     document.getElementById("modal-manage-team").addEventListener("show.bs.modal", populateTeamList);
 });
 
-        // Populate New Ticket dropdowns
+// Populate New Ticket dropdowns
 function populateDropdowns() {
-                  const people = loadData("people");
-                     const projects = loadData("projects");
+    const people = loadData("people");
+    const projects = loadData("projects");
 
-                       // Projects
-         const projectSelect = document.getElementById("select-project");
-        projectSelect.innerHTML = `<option value="" selected disabled>Select Project...</option>`;
-                  projects.forEach(p => {
-             const opt = document.createElement("option");
-          opt.value = p.id;
-               opt.textContent = p.name;
+    // Projects
+    const projectSelect = document.getElementById("select-project");
+    projectSelect.innerHTML = `<option value="" selected disabled>Select Project...</option>`;
+    projects.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
         projectSelect.appendChild(opt);
     });
 
     // Identified By
     const reporterSelect = document.getElementById("select-reporter");
-                 reporterSelect.innerHTML = `<option value="" selected disabled>Select Team Member...</option>`;
-            people.forEach(person => {
+    reporterSelect.innerHTML = `<option value="" selected disabled>Select Team Member...</option>`;
+    people.forEach(person => {
         const opt = document.createElement("option");
         opt.value = person.id;
         opt.textContent = `${person.name} ${person.surname}`;
@@ -44,37 +44,37 @@ function populateDropdowns() {
     });
 
 
-  
+
 
     // Assigned To
-  
+
     const assigneeSelect = document.getElementById("select-assignee");
     assigneeSelect.innerHTML = `<option value="" selected>Unassigned</option>`;
     people.forEach(person => {
 
-      
-               const opt = document.createElement("option");
-         opt.value = person.id;
-   opt.textContent = `${person.name} ${person.surname}`;
+
+        const opt = document.createElement("option");
+        opt.value = person.id;
+        opt.textContent = `${person.name} ${person.surname}`;
         assigneeSelect.appendChild(opt);
-      
+
     });
 }
 
 // Populate Manage Projects modal
-                   function populateProjectsList() {
+function populateProjectsList() {
     const projects = loadData("projects");
-                    const list = document.getElementById("list-projects");
-             list.innerHTML = "";
+    const list = document.getElementById("list-projects");
+    list.innerHTML = "";
 
     projects.forEach(project => {
         const li = document.createElement("li");
         li.className = "list-group-item d-flex justify-content-between align-items-center bg-white";
-                         li.innerHTML = `
+        li.innerHTML = `
             <span class="text-dark fw-semibold">${project.name}</span>
             <span class="badge bg-secondary rounded-pill font-monospace">PRJ-00${project.id}</span>
         `;
-                 list.appendChild(li);
+        list.appendChild(li);
     });
 }
 
@@ -84,10 +84,10 @@ function populateTeamList() {
     const people = loadData("people");
     const list = document.getElementById("list-team-members");
     list.innerHTML = "";
-  
+
 
     people.forEach(person => {
-      
+
         const fullName = `${person.name} ${person.surname}`;
         const li = document.createElement("li");
         li.className = "list-group-item d-flex justify-content-between align-items-center bg-white p-3";
@@ -107,7 +107,7 @@ function populateTeamList() {
         `;
         list.appendChild(li);
     });
-  
+
 }
 
 // Render Kanban board
@@ -124,10 +124,10 @@ function renderBoard() {
 
     issues.forEach(issue => {
         const projectName = loadData("projects").find(p => p.id === issue.projectId)?.name || "Unknown";
-        const assigneeName = issue.assignedTo 
-            ? loadData("people").find(p => p.id === issue.assignedTo)?.name || "Unassigned" 
+        const assigneeName = issue.assignedTo
+            ? loadData("people").find(p => p.id === issue.assignedTo)?.name || "Unassigned"
             : "Unassigned";
-            
+
         const cardHTML = `
             <div class="card border-0 shadow-sm mb-2 ticket-card" data-id="${issue.id}" data-issue-id="${issue.id}">
                 <div class="card-body p-3">
@@ -153,5 +153,5 @@ function renderBoard() {
     document.getElementById("count-in-progress").textContent = countInProgress;
     document.getElementById("count-overdue").textContent = countOverdue;
     document.getElementById("count-resolved").textContent = countResolved;
-  
+
 }

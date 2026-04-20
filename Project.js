@@ -7,11 +7,16 @@ function renderProjects() {
 
     projects.forEach(project => {
         const liHTML = `
-            <li class="list-group-item d-flex justify-content-between align-items-center bg-white">
+            <li class="list-group-item d-flex justify-content-between align-items-center bg-white p-3">
                 <span class="text-dark fw-semibold">${project.name}</span>
-                <span class="badge bg-secondary rounded-pill font-monospace">
-                    PRJ-${project.id.toString().padStart(3, '0')}
-                </span>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-secondary rounded-pill font-monospace">
+                        PRJ-${project.id.toString().padStart(3, '0')}
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger shadow-sm" onclick="deleteProject(${project.id})" title="Delete Project">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </div>
             </li>
         `;
 
@@ -70,3 +75,29 @@ function handleAddProject() {
 
     console.log('New project added:', newProject);
 }
+
+// Handle Project Deletion
+window.deleteProject = function (projectId) {
+    // 1. Confirm with the user, warning them about cascading deletions
+    if (confirm("Are you sure you want to delete this project? ALL tickets associated with this project will also be permanently deleted. This action cannot be undone.")) {
+
+        // 2. Remove the project
+        let projects = loadData("projects");
+        projects = projects.filter(p => p.id !== projectId);
+        saveData("projects", projects);
+
+        // 3. Remove all associated issues
+        let issues = loadData("issues");
+        issues = issues.filter(issue => issue.projectId !== projectId);
+        saveData("issues", issues);
+
+        // 4. Update the UI
+        renderProjects();
+
+        // Update the Kanban board to reflect deleted tickets
+        if (typeof renderBoard === 'function') renderBoard();
+
+        // Update the dropdown menus in case the ticket modal is opened later
+        if (typeof populateProjectSelect === 'function') populateProjectSelect();
+    }
+};

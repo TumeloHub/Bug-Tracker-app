@@ -196,8 +196,8 @@
                                         id="ticket-project-002">Frontend</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-2" title="Assigned to: Rick Grimes">
-                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-002">Mario
-                                        J.</span>
+                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-002">Ricj
+                                        G.</span>
                                     <img src="https://ui-avatars.com/api/?name=Rick+Grimes&background=random&rounded=true&size=28"
                                         alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-002">
                                 </div>
@@ -226,8 +226,8 @@
                                         id="ticket-project-003">Frontend</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-2" title="Assigned to: Rick Grimes">
-                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-003">Mario
-                                        J.</span>
+                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-003">Rick
+                                        G.</span>
                                     <img src="https://ui-avatars.com/api/?name=Rick+Grimes&background=random&rounded=true&size=28"
                                         alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-003">
                                 </div>
@@ -256,8 +256,8 @@
                                         id="ticket-project-004">Frontend</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-2" title="Assigned to: Rick Grimes">
-                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-004">Mario
-                                        J.</span>
+                                    <span class="small fw-semibold text-muted" id="ticket-assignee-name-004">Rick
+                                        G.</span>
                                     <img src="https://ui-avatars.com/api/?name=Rick+Grimes&background=random&rounded=true&size=28"
                                         alt="Assignee Avatar" class="shadow-sm" id="ticket-pfp-004">
                                 </div>
@@ -387,9 +387,12 @@
 
 
 
-                <div class="modal-footer border-top-0 bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" id="btn-save-ticket" class="btn btn-primary">Save Ticket</button>
+                <div class="modal-footer border-top-0 bg-light d-flex justify-content-between">
+                    <button type="button" class="btn btn-danger d-none" id="btn-delete-ticket">Delete Ticket</button>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="btn-save-ticket">Save Ticket</button>
+                    </div>
                 </div>
 
             </div>
@@ -554,6 +557,67 @@
         </div>
     </div>
 
+    <!-- user editing menu -->
+    <div class="modal fade" id="modal-edit-team-member" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Edit Team Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+
+                    <div class="text-center mb-4">
+                        <img src="" id="edit-team-pfp-preview" alt="Profile Picture"
+                            class="rounded-circle shadow-sm mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+                        <div>
+                            <label for="input-edit-pfp" class="btn btn-sm btn-outline-secondary">Change Picture</label>
+                            <input type="file" id="input-edit-pfp" class="d-none" accept="image/*">
+                        </div>
+                    </div>
+
+                    <form id="form-edit-team-member">
+                        <input type="hidden" id="edit-team-id">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="input-edit-team-name" class="form-label fw-semibold small">First
+                                    Name</label>
+                                <input type="text" class="form-control" id="input-edit-team-name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="input-edit-team-surname"
+                                    class="form-label fw-semibold small">Surname</label>
+                                <input type="text" class="form-control" id="input-edit-team-surname" required>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="input-edit-team-email" class="form-label fw-semibold small">Email
+                                    Address</label>
+                                <input type="email" class="form-control" id="input-edit-team-email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="input-edit-team-username"
+                                    class="form-label fw-semibold small">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted">@</span>
+                                    <input type="text" class="form-control" id="input-edit-team-username" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 bg-light d-flex justify-content-between">
+                    <button type="button" class="btn btn-danger" id="btn-delete-team-member">Delete User</button>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="btn-update-team-member">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="localstoragehelpers.js"></script>
     <script src="Issues.js"></script>
@@ -565,20 +629,3 @@
 </body>
 
 </html>
-
-<!-- 
-TO DO LIST: 
-fixed issue with drag and drop not working if a column is empty by adding a min height
-removed personalized default values
-added border to columns
-fixed incorrect comment use where text would display at bottom of screen
-fixed default profile images being first 2 characters in string apart from initials
-created menu for tickets 
-changed ticket created by name to username
-created menu to view users
-created functionality to change profile picture with local files
-- we need to be able to access tickets and edit them 
-- if current date is greater than target resoloution date then it must go to overdue
-- if a ticket is dragged into resolved column then the ticket editor must open and a resoloution date is added and a resoloution summary
-- a resolved issue should not be able to return to other columns
-- we need a way to delete a ticket, this can be done in the menu -->

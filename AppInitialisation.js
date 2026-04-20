@@ -1,16 +1,5 @@
-    // ==================== INITIALISE APP ====================
-   window.addEventListener('load', () => {
-    // Populate dropdowns in the New Ticket modal every time it opens
-    const createTicketModal = document.getElementById('modal-create-ticket');
-    createTicketModal.addEventListener('show.bs.modal', () => {
-        renderBoard();
-        populateProjectSelect();
-        populatePeopleSelects();
-
-        // Default date identified to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('input-date-identified').value = today;
-    });
+// ==================== INITIALISE APP ====================
+window.addEventListener('load', () => {
 
     // Save Ticket button
     document.getElementById('btn-save-ticket').addEventListener('click', handleSaveTicket);

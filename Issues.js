@@ -9,6 +9,19 @@ function getPriorityBadgeClass(priority) {
 
 // Create a single ticket card element
 // Create a single ticket card element
+function isIssueOverdue(issue) {
+    // Never show overdue clock on resolved tickets
+    if (issue.status === 'resolved') return false;
+    
+    // No target date = not overdue
+    if (!issue.targetDate) return false;
+
+    // Compare YYYY-MM-DD strings (current date vs target date)
+    const today = new Date().toISOString().split('T')[0];
+    return issue.targetDate < today;
+}
+
+// Create a single ticket card element
 function createTicketCard(issue, personMap, projectMap) {
     const person = issue.assignedTo ? personMap[issue.assignedTo] : null;
 
@@ -23,6 +36,11 @@ function createTicketCard(issue, personMap, projectMap) {
     const reporterUsername = issue.identifiedBy ? `@${issue.identifiedBy}` : 'Unknown';
     const assigneeUsername = person ? `@${person.username}` : 'Unassigned';
 
+    // NEW: Overdue red clock indicator
+    const overdueClock = isIssueOverdue(issue) 
+        ? `<img src="RedClock.png" alt="Overdue" title="Overdue – Target resolution date has passed" style="width: 26px; height: 26px; flex-shrink: 0;">`
+        : '';
+
     const cardHTML = `
         <div class="card border-0 shadow-sm mb-2 ticket-card" data-issue-id="${issue.id}">
             <div class="card-body p-3">
@@ -31,9 +49,14 @@ function createTicketCard(issue, personMap, projectMap) {
                     <span class="badge bg-light text-secondary border border-secondary shadow-sm" style="font-size: 0.70rem;">
                         <i class="bi bi-person-fill"></i> ${reporterUsername}
                     </span>
-                    <span class="badge ${getPriorityBadgeClass(issue.priority)} rounded-pill" style="font-size: 0.70rem;">
-                        ${issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
-                    </span>
+                    
+                    <!-- Priority + Red Clock (if overdue) -->
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge ${getPriorityBadgeClass(issue.priority)} rounded-pill" style="font-size: 0.70rem;">
+                            ${issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
+                        </span>
+                        ${overdueClock}
+                    </div>
                 </div>
 
                 <p class="card-text fw-semibold mb-2 text-dark text-break">${issue.summary}</p>
@@ -41,7 +64,8 @@ function createTicketCard(issue, personMap, projectMap) {
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <span class="badge bg-info text-dark rounded-pill shadow-sm" style="font-size: 0.70rem;">${projectName}</span>
                     <div class="d-flex align-items-center gap-2" title="Assigned to: ${person ? person.name + ' ' + person.surname : 'Unassigned'}">
-<span class="small fw-semibold text-muted d-inline-block text-truncate" style="max-width: 80px;" title="${assigneeUsername}">${assigneeUsername}</span>                        ${person ? `<img src="${avatarUrl}" alt="Avatar" class="shadow-sm" style="width:28px;height:28px;border-radius:50%; object-fit: cover;">` : ''}
+                        <span class="small fw-semibold text-muted d-inline-block text-truncate" style="max-width: 80px;" title="${assigneeUsername}">${assigneeUsername}</span>                        
+                        ${person ? `<img src="${avatarUrl}" alt="Avatar" class="shadow-sm" style="width:28px;height:28px;border-radius:50%; object-fit: cover;">` : ''}
                     </div>
                 </div>
 
@@ -166,14 +190,40 @@ function handleSaveTicket() {
     }
 
     const status = document.getElementById('select-status').value;
+
+    // Always read assignee from the form (used for both resolved and non-resolved cases)
+    const assigneeSelect = document.getElementById('select-assignee');
+    const assigneeValue = assigneeSelect.value ? parseInt(assigneeSelect.value) : null;
+
+    // ====================== RESOLVED TICKET VALIDATION ======================
     let actualDate = null;
     let resolution = '';
 
-    // If status is resolved, fill actual date + resolution
     if (status === 'resolved') {
-        actualDate = document.getElementById('input-date-actual').value || new Date().toISOString().split('T')[0];
-        resolution = document.getElementById('input-resolution-summary').value.trim();
+        // 1. Must be assigned to someone
+        if (!assigneeValue) {
+            alert('This ticket must be assigned to a team member before it can be marked as Resolved.');
+            return;
+        }
+
+        // 2. Resolution Summary MUST be filled
+        const resolutionSummary = document.getElementById('input-resolution-summary').value.trim();
+        if (!resolutionSummary) {
+            alert('Please fill in the Resolution Summary before marking the ticket as Resolved.');
+            return;
+        }
+
+        // 3. Actual Resolution Date MUST be filled
+        const actualDateInput = document.getElementById('input-date-actual').value;
+        if (!actualDateInput) {
+            alert('Please set the Actual Resolution Date before marking the ticket as Resolved.');
+            return;
+        }
+
+        actualDate = actualDateInput;
+        resolution = resolutionSummary;
     }
+    // ====================== END VALIDATION ======================
 
     let issues = loadData("issues");
     const saveBtn = document.getElementById('btn-save-ticket');
@@ -188,7 +238,7 @@ function handleSaveTicket() {
             issues[index].identifiedBy = reporter;
             issues[index].dateIdentified = document.getElementById('input-date-identified').value;
             issues[index].projectId = parseInt(projectIdStr);
-            issues[index].assignedTo = document.getElementById('select-assignee').value ? parseInt(document.getElementById('select-assignee').value) : null;
+            issues[index].assignedTo = assigneeValue;
             issues[index].status = status;
             issues[index].priority = document.getElementById('select-priority').value;
             issues[index].targetDate = document.getElementById('input-date-target').value || null;
@@ -205,7 +255,7 @@ function handleSaveTicket() {
             identifiedBy: reporter,
             dateIdentified: document.getElementById('input-date-identified').value || new Date().toISOString().split('T')[0],
             projectId: parseInt(projectIdStr),
-            assignedTo: document.getElementById('select-assignee').value ? parseInt(document.getElementById('select-assignee').value) : null,
+            assignedTo: assigneeValue,
             status: status,
             priority: document.getElementById('select-priority').value,
             targetDate: document.getElementById('input-date-target').value || null,
@@ -229,7 +279,6 @@ function handleSaveTicket() {
     // Refresh the board
     renderBoard();
 }
-
 // Handle Ticket Deletion
 document.addEventListener("DOMContentLoaded", () => {
     const deleteBtn = document.getElementById("btn-delete-ticket");

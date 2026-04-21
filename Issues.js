@@ -7,8 +7,7 @@ function getPriorityBadgeClass(priority) {
     }
 }
 
-// Create a single ticket card element
-// Create a single ticket card element
+// Helper: Check if an issue is overdue based on target resolution date
 function isIssueOverdue(issue) {
     // Never show overdue clock on resolved tickets
     if (issue.status === 'resolved') return false;
@@ -21,22 +20,46 @@ function isIssueOverdue(issue) {
     return issue.targetDate < today;
 }
 
+// NEW: Automatically move overdue issues to the Overdue column (and move back when target date is updated)
+function autoSetOverdueStatuses() {
+    let issues = loadData("issues");
+    const today = new Date().toISOString().split('T')[0];
+    let changed = false;
+
+    issues.forEach(issue => {
+        if (issue.status === 'resolved') return;
+
+        const isOverdueNow = issue.targetDate && issue.targetDate < today;
+
+        if (isOverdueNow && issue.status !== 'overdue') {
+            issue.status = 'overdue';
+            changed = true;
+        } else if (!isOverdueNow && issue.status === 'overdue') {
+            // Auto-move back based on whether it has an assignee
+            issue.status = issue.assignedTo ? 'in-progress' : 'open';
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        saveData("issues", issues);
+    }
+}
+
 // Create a single ticket card element
 function createTicketCard(issue, personMap, projectMap) {
     const person = issue.assignedTo ? personMap[issue.assignedTo] : null;
 
-    // Explicitly grab the first letter of name and surname for initials, or use custom PFP
     const avatarUrl = person
         ? (person.profilePic || `https://ui-avatars.com/api/?name=${person.name.charAt(0)}+${person.surname.charAt(0)}&background=random&rounded=true&size=28`)
         : '';
 
     const projectName = projectMap[issue.projectId] || 'Unknown Project';
 
-    // Use identifiedBy for the reporter (which is stored as the username string in seed data)
     const reporterUsername = issue.identifiedBy ? `@${issue.identifiedBy}` : 'Unknown';
     const assigneeUsername = person ? `@${person.username}` : 'Unassigned';
 
-    // NEW: Overdue red clock indicator
+    // Overdue red clock indicator (already using the uploaded RedClock.png)
     const overdueClock = isIssueOverdue(issue) 
         ? `<img src="RedClock.png" alt="Overdue" title="Overdue – Target resolution date has passed" style="width: 26px; height: 26px; flex-shrink: 0;">`
         : '';
@@ -80,6 +103,9 @@ function createTicketCard(issue, personMap, projectMap) {
 
 // Render the entire Kanban board
 function renderBoard() {
+    // Auto-update overdue statuses BEFORE rendering (this powers the automatic column movement)
+    autoSetOverdueStatuses();
+
     const issues = loadData("issues");
     const people = loadData("people");
     const projects = loadData("projects");
@@ -101,7 +127,6 @@ function renderBoard() {
 
     issues.forEach(issue => {
         let statusKey = issue.status;
-        // Normalize status if needed
         if (statusKey === 'in progress') statusKey = 'in-progress';
         if (columns[statusKey]) {
             columns[statusKey].push(issue);
@@ -168,7 +193,6 @@ function populatePeopleSelects() {
     });
 }
 
-// Save new issue when "Save Ticket" is clicked
 // Save or Update issue when "Save Ticket" is clicked
 function handleSaveTicket() {
     const summary = document.getElementById('input-summary').value.trim();
@@ -189,31 +213,28 @@ function handleSaveTicket() {
         return;
     }
 
-    const status = document.getElementById('select-status').value;
+    let status = document.getElementById('select-status').value;
 
-    // Always read assignee from the form (used for both resolved and non-resolved cases)
+    // Always read assignee from the form
     const assigneeSelect = document.getElementById('select-assignee');
-    const assigneeValue = assigneeSelect.value ? parseInt(assigneeSelect.value) : null;
+    let assigneeValue = assigneeSelect.value ? parseInt(assigneeSelect.value) : null;
 
     // ====================== RESOLVED TICKET VALIDATION ======================
     let actualDate = null;
     let resolution = '';
 
     if (status === 'resolved') {
-        // 1. Must be assigned to someone
         if (!assigneeValue) {
             alert('This ticket must be assigned to a team member before it can be marked as Resolved.');
             return;
         }
 
-        // 2. Resolution Summary MUST be filled
         const resolutionSummary = document.getElementById('input-resolution-summary').value.trim();
         if (!resolutionSummary) {
             alert('Please fill in the Resolution Summary before marking the ticket as Resolved.');
             return;
         }
 
-        // 3. Actual Resolution Date MUST be filled
         const actualDateInput = document.getElementById('input-date-actual').value;
         if (!actualDateInput) {
             alert('Please set the Actual Resolution Date before marking the ticket as Resolved.');
@@ -223,11 +244,35 @@ function handleSaveTicket() {
         actualDate = actualDateInput;
         resolution = resolutionSummary;
     }
-    // ====================== END VALIDATION ======================
+    // ====================== END RESOLVED VALIDATION ======================
 
-    let issues = loadData("issues");
+    // ====================== NEW: ASSIGNMENT CONFIRMATION (Open → In-Progress) ======================
     const saveBtn = document.getElementById('btn-save-ticket');
     const editId = saveBtn.getAttribute('data-edit-id');
+    const isNewTicket = !editId;
+
+    let previousStatus = null;
+    if (!isNewTicket) {
+        const tempIssues = loadData("issues");
+        const oldIssue = tempIssues.find(i => i.id == editId);
+        if (oldIssue) previousStatus = oldIssue.status;
+    }
+
+    if (assigneeValue && (isNewTicket || previousStatus === 'open')) {
+        const people = loadData("people");
+        const member = people.find(p => p.id === assigneeValue);
+        const memberName = member ? `${member.name} ${member.surname}` : 'the selected team member';
+
+        if (confirm(`Confirm, do you want to assign ${memberName} to this issue?`)) {
+            status = 'in-progress';
+        } else {
+            // User cancelled the assignment → do not assign
+            assigneeValue = null;
+        }
+    }
+    // ====================== END ASSIGNMENT CONFIRMATION ======================
+
+    let issues = loadData("issues");
 
     if (editId) {
         // UPDATE EXISTING TICKET
@@ -276,9 +321,10 @@ function handleSaveTicket() {
     const modal = bootstrap.Modal.getInstance(modalEl);
     if (modal) modal.hide();
 
-    // Refresh the board
+    // Refresh the board (auto-overdue logic runs inside renderBoard)
     renderBoard();
 }
+
 // Handle Ticket Deletion
 document.addEventListener("DOMContentLoaded", () => {
     const deleteBtn = document.getElementById("btn-delete-ticket");
@@ -290,19 +336,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (confirm("Are you sure you want to delete this ticket? This action cannot be undone.")) {
                 let issues = loadData("issues");
-
-                // Filter out the deleted issue
                 issues = issues.filter(i => i.id !== deleteId);
-
-                // Save the updated array back to local storage
                 saveData("issues", issues);
 
-                // Hide the modal
                 const modalEl = document.getElementById('modal-create-ticket');
                 const modal = bootstrap.Modal.getInstance(modalEl);
                 if (modal) modal.hide();
 
-                // Refresh the Kanban board
                 renderBoard();
             }
         });

@@ -14,7 +14,7 @@ function handleDrop(issueId, targetStatus) {
         originalStatusForRevert = issue.status;
     }
 
-    // ====================== NO MOVING BACKWARD (except out of Resolved) ======================
+    // ====================== BACKWARD MOVEMENT RULES (updated with all new requirements) ======================
     const statusOrder = {
         "open": 0,
         "in-progress": 1,
@@ -34,7 +34,49 @@ function handleDrop(issueId, targetStatus) {
             } else {
                 return;
             }
-        } else {
+        } 
+        else if (issue.status === "in-progress" && targetStatus === "open") {
+            // In-Progress → Open: allow only with deallocation confirmation
+            if (confirm("Do you want to deallocate the assignee and move this issue back to the Open column?")) {
+                issue.assignedTo = null;
+            } else {
+                return;
+            }
+        } 
+        else if (issue.status === "overdue") {
+            // Overdue → Open or In-Progress: strict validation + new target date required
+            if (targetStatus === "in-progress" && !issue.assignedTo) {
+                alert("You cannot move an overdue ticket to In-Progress because no one is assigned to the issue.");
+                return;
+            }
+            if (targetStatus === "open" && issue.assignedTo) {
+                if (!confirm("This issue has an assignee. Do you want to deallocate them and move it back to Open?")) {
+                    return;
+                }
+                issue.assignedTo = null;
+            }
+
+            // Prompt user for new target resolution date
+            const newTargetDate = prompt(`To move this overdue ticket back to ${targetStatus.replace('-', ' ')}, please enter a new Target Resolution Date (YYYY-MM-DD):\n\nCurrent target was: ${issue.targetDate || 'none'}\n\nLeave blank to keep in Overdue.`);
+
+            if (!newTargetDate || newTargetDate.trim() === "") {
+                if (confirm("Leave target date blank? The issue will stay in the Overdue column.")) {
+                    return;
+                } else {
+                    return;
+                }
+            }
+
+            const trimmedDate = newTargetDate.trim();
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
+                alert("Invalid date format. Please use YYYY-MM-DD.");
+                return;
+            }
+
+            issue.targetDate = trimmedDate;
+            // Fall through to normal status update below (auto-overdue logic will keep it out of overdue)
+        } 
+        else {
             alert("You cannot move a ticket back to a previous column.");
             return;
         }
@@ -42,27 +84,22 @@ function handleDrop(issueId, targetStatus) {
 
     // ====================== RESOLVED DRAG LOGIC ======================
     if (targetStatus === "resolved") {
-        // Must be assigned before resolving
         if (!issue.assignedTo) {
             alert("This ticket must be assigned to a team member before it can be resolved.");
             return;
         }
 
-        // Auto-fill Actual Resolution Date if not set
         if (!issue.actualDate) {
             issue.actualDate = new Date().toISOString().split("T")[0];
         }
     }
 
-    // ====================== UPDATE & MOVE TICKET TEMPORARILY ======================
-    // We move it to Resolved column immediately so the user sees it "placed" there.
-    // The modal will open for final resolution details.
+    // ====================== UPDATE & MOVE TICKET ======================
     issue.status = targetStatus;
     saveData("issues", issues);
     renderBoard();
 
-    // If this was a drag-to-resolved action, store original status on the modal
-    // so we can revert on Cancel (if user didn't fill resolution)
+    // If this was a drag-to-resolved action, store original status on the modal for cancel-revert
     if (originalStatusForRevert) {
         const modalEl = document.getElementById('modal-create-ticket');
         if (modalEl) {
@@ -71,7 +108,7 @@ function handleDrop(issueId, targetStatus) {
         }
     }
 
-    // Open modal so user can fill Resolution Summary (ticket is already in Resolved column)
+    // Open modal so user can fill Resolution Summary (for resolved drags)
     if (targetStatus === "resolved") {
         setTimeout(() => {
             viewSingleIssue(issueId);
@@ -87,7 +124,6 @@ function handleDrop(issueId, targetStatus) {
         }
     }, 30);
 }
-
 // Re-attach the improved handleDrop to all columns
 function initEnhancedDragAndDrop() {
     const columnData = [

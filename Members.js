@@ -140,7 +140,7 @@ window.openEditUserModal = function (userId) {
     document.getElementById('input-edit-team-username').value = person.username;
 
     // Set profile picture preview
-const avatarUrl = person.profilePic ? person.profilePic : `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}+${encodeURIComponent(person.surname)}&background=random&rounded=true&size=80`;    document.getElementById('edit-team-pfp-preview').src = avatarUrl;
+    const avatarUrl = person.profilePic ? person.profilePic : `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}+${encodeURIComponent(person.surname)}&background=random&rounded=true&size=80`; document.getElementById('edit-team-pfp-preview').src = avatarUrl;
 
     // Clear the file input in case it was used previously
     document.getElementById('input-edit-pfp').value = "";
@@ -157,7 +157,7 @@ document.getElementById('input-edit-pfp').addEventListener('change', function (e
         reader.onload = function (event) {
             // Create an image object to read the file dimensions
             const img = new Image();
-            img.onload = function() {
+            img.onload = function () {
                 const canvas = document.createElement('canvas');
                 const MAX_SIZE = 200; // Resize to a max of 200x200 pixels
                 let width = img.width;
@@ -179,13 +179,13 @@ document.getElementById('input-edit-pfp').addEventListener('change', function (e
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
-                
+
                 // Draw the resized image onto the canvas
                 ctx.drawImage(img, 0, 0, width, height);
 
                 // Convert canvas back to a much smaller Base64 string (JPEG format, 80% quality)
                 const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
-                
+
                 // Set the preview to the compressed image
                 document.getElementById('edit-team-pfp-preview').src = compressedBase64;
             };
@@ -227,7 +227,7 @@ document.getElementById('btn-update-team-member').addEventListener('click', func
         renderTeamMembers();
 
         // Close modal and return to Manage Team modal
-bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-edit-team-member')).hide();        bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-manage-team')).show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-edit-team-member')).hide(); bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-manage-team')).show();
         // Re-render board and dropdowns to show updated user info
         if (typeof renderBoard === 'function') renderBoard();
         if (typeof populatePeopleSelects === 'function') populatePeopleSelects();
@@ -252,7 +252,7 @@ document.getElementById('btn-delete-team-member').addEventListener('click', func
 
         renderTeamMembers();
 
-bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-edit-team-member')).hide();        bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-manage-team')).show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-edit-team-member')).hide(); bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-manage-team')).show();
         if (typeof renderBoard === 'function') renderBoard();
     }
 });

@@ -123,6 +123,8 @@ function handleAddTeamMember() {
 
 // --- USER MANAGEMENT MENU LOGIC ---
 
+// --- USER MANAGEMENT MENU LOGIC ---
+
 // 1. Open the Edit User Modal
 window.openEditUserModal = function (userId) {
     const people = loadData("people");
@@ -140,9 +142,11 @@ window.openEditUserModal = function (userId) {
     document.getElementById('input-edit-team-email').value = person.email;
     document.getElementById('input-edit-team-username').value = person.username;
 
-    // Set profile picture preview
+    // Set profile picture preview and ensure the cleared flag is reset
     const avatarUrl = person.profilePic ? person.profilePic : `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name + '+' + person.surname)}&background=random&rounded=true&size=80`;
-    document.getElementById('edit-team-pfp-preview').src = avatarUrl;
+    const previewImg = document.getElementById('edit-team-pfp-preview');
+    previewImg.src = avatarUrl;
+    previewImg.removeAttribute('data-cleared');
 
     // Clear the file input in case it was used previously
     document.getElementById('input-edit-pfp').value = "";
@@ -157,11 +161,26 @@ document.getElementById('input-edit-pfp').addEventListener('change', function (e
     if (file) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            document.getElementById('edit-team-pfp-preview').src = e.target.result;
-            // The image is now temporarily stored in the src attribute as a Base64 string until saved
+            const previewImg = document.getElementById('edit-team-pfp-preview');
+            previewImg.src = e.target.result;
+            previewImg.removeAttribute('data-cleared'); // User chose a new file, remove cleared flag
         };
         reader.readAsDataURL(file);
     }
+});
+
+// 2b. Handle Clear Profile Picture Button
+document.getElementById('btn-clear-pfp').addEventListener('click', function () {
+    const firstName = document.getElementById('input-edit-team-name').value.trim() || 'User';
+    const surname = document.getElementById('input-edit-team-surname').value.trim() || '';
+    const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName + '+' + surname)}&background=random&rounded=true&size=80`;
+
+    const previewImg = document.getElementById('edit-team-pfp-preview');
+    previewImg.src = defaultAvatarUrl;
+    previewImg.setAttribute('data-cleared', 'true'); // Flag that the user wants to delete their custom PFP
+
+    // Clear the file input so no accidental uploads happen
+    document.getElementById('input-edit-pfp').value = "";
 });
 
 // 3. Save Edited User Details
@@ -171,7 +190,10 @@ document.getElementById('btn-update-team-member').addEventListener('click', func
     const surname = document.getElementById('input-edit-team-surname').value.trim();
     const email = document.getElementById('input-edit-team-email').value.trim();
     const username = document.getElementById('input-edit-team-username').value.trim();
-    const profilePicSrc = document.getElementById('edit-team-pfp-preview').src;
+
+    const previewImg = document.getElementById('edit-team-pfp-preview');
+    const profilePicSrc = previewImg.src;
+    const isCleared = previewImg.getAttribute('data-cleared') === 'true';
 
     if (!isValidName(firstName) || !isValidName(surname)) {
         alert('Names must be valid and contain no special characters or numbers.');
@@ -187,8 +209,10 @@ document.getElementById('btn-update-team-member').addEventListener('click', func
         people[index].email = email;
         people[index].username = username;
 
-        // If the src contains data:image, it means a local file was uploaded
-        if (profilePicSrc.startsWith('data:image')) {
+        // NEW: Apply the correct image saving logic
+        if (isCleared) {
+            people[index].profilePic = null;
+        } else if (profilePicSrc.startsWith('data:image')) {
             people[index].profilePic = profilePicSrc;
         }
 

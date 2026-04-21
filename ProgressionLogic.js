@@ -23,7 +23,7 @@ function handleDrop(issueId, targetStatus) {
     };
 
     const currentOrder = statusOrder[issue.status] ?? 0;
-    const targetOrder   = statusOrder[targetStatus] ?? 0;
+    const targetOrder = statusOrder[targetStatus] ?? 0;
 
     if (targetOrder < currentOrder) {
         if (issue.status === "resolved") {
@@ -31,10 +31,20 @@ function handleDrop(issueId, targetStatus) {
             if (confirm("Warning: Moving this ticket out of the Resolved column will permanently delete the resolution date and summary.\n\nDo you want to continue?")) {
                 issue.actualDate = null;
                 issue.resolution = "";
+
+                // === Check if moving specifically to Open ===
+                if (targetStatus === "open" && issue.assignedTo) {
+                    if (confirm("This issue has an assignee. Do you want to deallocate them and move it back to the Open column?")) {
+                        issue.assignedTo = null;
+                    } else {
+                        return; // Cancel the move if they refuse to deallocate
+                    }
+                }
+
             } else {
                 return;
             }
-        } 
+        }
         else if (issue.status === "in-progress" && targetStatus === "open") {
             // In-Progress → Open: allow only with deallocation confirmation
             if (confirm("Do you want to deallocate the assignee and move this issue back to the Open column?")) {
@@ -42,7 +52,7 @@ function handleDrop(issueId, targetStatus) {
             } else {
                 return;
             }
-        } 
+        }
         else if (issue.status === "overdue") {
             // Overdue → Open or In-Progress: strict validation + new target date required
             if (targetStatus === "in-progress" && !issue.assignedTo) {
@@ -75,12 +85,29 @@ function handleDrop(issueId, targetStatus) {
 
             issue.targetDate = trimmedDate;
             // Fall through to normal status update below (auto-overdue logic will keep it out of overdue)
-        } 
+        }
         else {
             alert("You cannot move a ticket back to a previous column.");
             return;
         }
     }
+
+    // ====================== IN-PROGRESS DRAG LOGIC ======================
+    if (targetStatus === "in-progress") {
+        if (!issue.assignedTo) {
+            alert("Please assign a team member before moving this ticket to In Progress.");
+
+            // Open the edit modal so the user can assign someone
+            setTimeout(() => {
+                if (typeof viewSingleIssue === "function") {
+                    viewSingleIssue(issueId);
+                }
+            }, 100);
+
+            return; // Cancel the drag-and-drop movement
+        }
+    }
+
 
     // ====================== RESOLVED DRAG LOGIC ======================
     if (targetStatus === "resolved") {
@@ -127,10 +154,10 @@ function handleDrop(issueId, targetStatus) {
 // Re-attach the improved handleDrop to all columns
 function initEnhancedDragAndDrop() {
     const columnData = [
-        { id: 'col-open',        status: 'open' },
+        { id: 'col-open', status: 'open' },
         { id: 'col-in-progress', status: 'in-progress' },
-        { id: 'col-overdue',     status: 'overdue' },
-        { id: 'col-resolved',    status: 'resolved' }
+        { id: 'col-overdue', status: 'overdue' },
+        { id: 'col-resolved', status: 'resolved' }
     ];
 
     columnData.forEach(({ id, status }) => {

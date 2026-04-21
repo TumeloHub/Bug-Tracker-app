@@ -11,7 +11,7 @@ function getPriorityBadgeClass(priority) {
 function isIssueOverdue(issue) {
     // Never show overdue clock on resolved tickets
     if (issue.status === 'resolved') return false;
-    
+
     // No target date = not overdue
     if (!issue.targetDate) return false;
 
@@ -20,7 +20,7 @@ function isIssueOverdue(issue) {
     return issue.targetDate < today;
 }
 
-// NEW: Automatically move overdue issues to the Overdue column (and move back when target date is updated)
+// Automatically move overdue issues to the Overdue column (and move back when target date is updated)
 function autoSetOverdueStatuses() {
     let issues = loadData("issues");
     const today = new Date().toISOString().split('T')[0];
@@ -60,7 +60,7 @@ function createTicketCard(issue, personMap, projectMap) {
     const assigneeUsername = person ? `@${person.username}` : 'Unassigned';
 
     // Overdue red clock indicator (already using the uploaded RedClock.png)
-    const overdueClock = isIssueOverdue(issue) 
+    const overdueClock = isIssueOverdue(issue)
         ? `<img src="RedClock.png" alt="Overdue" title="Overdue – Target resolution date has passed" style="width: 26px; height: 26px; flex-shrink: 0;">`
         : '';
 
@@ -194,6 +194,7 @@ function populatePeopleSelects() {
 }
 
 // Save or Update issue when "Save Ticket" is clicked
+// Save or Update issue when "Save Ticket" is clicked
 function handleSaveTicket() {
     const summary = document.getElementById('input-summary').value.trim();
     if (!summary) {
@@ -213,11 +214,42 @@ function handleSaveTicket() {
         return;
     }
 
-    let status = document.getElementById('select-status').value;
+    // ====================== DATE VALIDATION ======================
+    const dateIdentifiedInput = document.getElementById('input-date-identified').value;
+    const targetDateInput = document.getElementById('input-date-target').value;
+
+    if (dateIdentifiedInput && targetDateInput) {
+        if (targetDateInput < dateIdentifiedInput) {
+            alert('Target Resolution Date cannot be earlier than the Date Identified.');
+            return;
+        }
+    }
 
     // Always read assignee from the form
     const assigneeSelect = document.getElementById('select-assignee');
     let assigneeValue = assigneeSelect.value ? parseInt(assigneeSelect.value) : null;
+
+    // Determine edit state
+    const saveBtn = document.getElementById('btn-save-ticket');
+    const editId = saveBtn.getAttribute('data-edit-id');
+    const isNewTicket = !editId;
+
+    let status = 'open'; // Default for new tickets
+    let previousStatus = null;
+
+    if (!isNewTicket) {
+        const tempIssues = loadData("issues");
+        const oldIssue = tempIssues.find(i => i.id == editId);
+        if (oldIssue) {
+            previousStatus = oldIssue.status;
+            status = oldIssue.status; // Keep current status for existing tickets
+        }
+    }
+
+    // Force status to "open" if there is no assignee and it's not already resolved
+    if (!assigneeValue && status !== 'resolved') {
+        status = 'open';
+    }
 
     // ====================== RESOLVED TICKET VALIDATION ======================
     let actualDate = null;
@@ -246,18 +278,7 @@ function handleSaveTicket() {
     }
     // ====================== END RESOLVED VALIDATION ======================
 
-    // ====================== NEW: ASSIGNMENT CONFIRMATION (Open → In-Progress) ======================
-    const saveBtn = document.getElementById('btn-save-ticket');
-    const editId = saveBtn.getAttribute('data-edit-id');
-    const isNewTicket = !editId;
-
-    let previousStatus = null;
-    if (!isNewTicket) {
-        const tempIssues = loadData("issues");
-        const oldIssue = tempIssues.find(i => i.id == editId);
-        if (oldIssue) previousStatus = oldIssue.status;
-    }
-
+    // ====================== ASSIGNMENT CONFIRMATION (Open → In-Progress) ======================
     if (assigneeValue && (isNewTicket || previousStatus === 'open')) {
         const people = loadData("people");
         const member = people.find(p => p.id === assigneeValue);
@@ -268,6 +289,7 @@ function handleSaveTicket() {
         } else {
             // User cancelled the assignment → do not assign
             assigneeValue = null;
+            if (status !== 'resolved') status = 'open';
         }
     }
     // ====================== END ASSIGNMENT CONFIRMATION ======================
@@ -321,7 +343,7 @@ function handleSaveTicket() {
     const modal = bootstrap.Modal.getInstance(modalEl);
     if (modal) modal.hide();
 
-    // Refresh the board (auto-overdue logic runs inside renderBoard)
+    // Refresh the board
     renderBoard();
 }
 

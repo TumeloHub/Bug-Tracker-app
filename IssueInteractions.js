@@ -2,7 +2,23 @@
 document.addEventListener("DOMContentLoaded", () => {
     setupGlobalTicketClick();
 
-    // Handle the "New Ticket" button explicitly so we don't rely on the buggy modal event
+    // === DATE CONSTRAINT LOGIC ===
+    const dateIdentifiedInput = document.getElementById('input-date-identified');
+    const targetDateInput = document.getElementById('input-date-target');
+
+    if (dateIdentifiedInput && targetDateInput) {
+        dateIdentifiedInput.addEventListener('change', function () {
+            // Set the minimum selectable date for the target date picker
+            targetDateInput.min = this.value;
+
+            // If the user already selected a target date that is now invalid, clear it
+            if (targetDateInput.value && targetDateInput.value < this.value) {
+                targetDateInput.value = '';
+            }
+        });
+    }
+
+    // Handle the "New Ticket" button explicitly 
     const newTicketBtn = document.getElementById("btn-new-ticket");
     if (newTicketBtn) {
         newTicketBtn.addEventListener("click", () => {
@@ -13,7 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (typeof populateProjectSelect === 'function') populateProjectSelect();
             if (typeof populatePeopleSelects === 'function') populatePeopleSelects();
 
-            document.getElementById('input-date-identified').value = new Date().toISOString().split('T')[0];
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('input-date-identified').value = today;
+
+            // Set the minimum target date to today for new tickets
+            document.getElementById('input-date-target').min = today;
         });
     }
 });
@@ -55,11 +75,11 @@ function viewSingleIssue(issueId) {
     document.getElementById("input-summary").value = issue.summary;
     document.getElementById("input-description").value = issue.description;
     document.getElementById("select-project").value = issue.projectId;
-    document.getElementById("select-status").value = issue.status;
     document.getElementById("select-priority").value = issue.priority;
     document.getElementById("select-reporter").value = issue.identifiedBy;
     document.getElementById("select-assignee").value = issue.assignedTo || "";
     document.getElementById("input-date-identified").value = issue.dateIdentified;
+    document.getElementById("input-date-target").min = issue.dateIdentified;
     document.getElementById("input-date-target").value = issue.targetDate || "";
     document.getElementById("input-date-actual").value = issue.actualDate || "";
     document.getElementById("input-resolution-summary").value = issue.resolution || "";
@@ -71,19 +91,28 @@ function viewSingleIssue(issueId) {
 }
 
 function toggleResolutionFields() {
-    const statusSelect       = document.getElementById('select-status');
-    const actualDateInput    = document.getElementById('input-date-actual');
+    const actualDateInput = document.getElementById('input-date-actual');
     const resolutionTextarea = document.getElementById('input-resolution-summary');
 
-    if (!statusSelect || !actualDateInput || !resolutionTextarea) return;
+    if (!actualDateInput || !resolutionTextarea) return;
 
-    const isResolved = statusSelect.value === 'resolved';
+    // Retrieve the current issue status from localStorage
+    const saveBtn = document.getElementById("btn-save-ticket");
+    const editId = saveBtn.getAttribute("data-edit-id");
+
+    let isResolved = false;
+    if (editId) {
+        const issues = loadData("issues");
+        const issue = issues.find(i => i.id == parseInt(editId));
+        if (issue && issue.status === 'resolved') {
+            isResolved = true;
+        }
+    }
 
     // Enable only when status = resolved
-    actualDateInput.disabled    = !isResolved;
+    actualDateInput.disabled = !isResolved;
     resolutionTextarea.disabled = !isResolved;
 
-    // Optional: make the fields look "active" when enabled
     if (isResolved) {
         actualDateInput.classList.add('bg-white', 'border-primary');
         resolutionTextarea.classList.add('bg-white', 'border-primary');
@@ -95,14 +124,6 @@ function toggleResolutionFields() {
 
 
 function initResolutionFieldToggle() {
-    const statusSelect = document.getElementById('select-status');
-    if (!statusSelect) return;
-
-    // Remove any old listener to prevent duplicates
-    statusSelect.removeEventListener('change', toggleResolutionFields);
-    statusSelect.addEventListener('change', toggleResolutionFields);
-
-    // Run once immediately (in case the modal already has a value)
     toggleResolutionFields();
 }
 

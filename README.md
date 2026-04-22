@@ -98,7 +98,13 @@ Stored data includes:
 - HTML 
 - CSS 
 - JavaScript
-- LocalStorage 
+- LocalStorage
+
+## AI Usage Declaration
+
+AI tools were used in the development of this project to assist with explanations, structuring, and refinement of ideas. All outputs were carefully reviewed, verified, and modified where necessary.
+
+This submission represents our own work and understanding. We take full responsibility for its accuracy and integrity, and confirm that the use of AI was supplementary and in line with academic integrity guidelines.
 
 ## Future Improvements
 

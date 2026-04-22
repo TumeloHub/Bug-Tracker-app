@@ -95,10 +95,10 @@ Stored data includes:
 
 ## Technologies Used
 
-- HTML (Structure)
-- CSS (Styling)
-- JavaScript (Functionality)
-- LocalStorage (Data persistence)
+- HTML 
+- CSS 
+- JavaScript
+- LocalStorage 
 
 ## Future Improvements
 

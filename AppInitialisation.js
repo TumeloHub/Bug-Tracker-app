@@ -34,6 +34,10 @@ window.addEventListener('load', () => {
         e.preventDefault();
         if (confirm("Are you sure you want to restore the default tickets? Any custom tickets you've created will be permanently lost.")) {
             saveData("issues", []);
+            // Clear all data arrays
+            saveData("issues", []);
+            saveData("people", []);
+            saveData("projects", []);
             localStorage.removeItem("issuesSeededBefore"); // <-- NEW: Bypass the popup when using the reset button
             seedData();
             renderBoard();

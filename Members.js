@@ -241,8 +241,12 @@ document.getElementById('btn-delete-team-member').addEventListener('click', func
         // Remove user from any assigned issues
         let issues = loadData("issues");
         issues.forEach(issue => {
-            if (issue.assignedTo === userId) issue.assignedTo = null;
-        });
+            if (issue.assignedTo === userId) {
+                issue.assignedTo = null;
+                issue.status = 'open'
+            }
+        }
+        );
         saveData("issues", issues);
 
         renderTeamMembers();

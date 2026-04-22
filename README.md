@@ -1,5 +1,8 @@
 # Bug-Tracker-app
 
+###link to website:
+https://bug-fixing-application.netlify.app/
+
 ## Overview
 The bug tracker app is a web based application that helps users manage software issues/bugs efficiently. It allows users to create, assign, view, and update issues within different projects.
 

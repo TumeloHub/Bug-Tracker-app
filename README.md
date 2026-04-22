@@ -1,6 +1,6 @@
-# Bug-Tracker-app
+# Bug Tracker app
 
-*### link to website:*
+### *link to website:*
 
 https://bug-fixing-application.netlify.app/
 
